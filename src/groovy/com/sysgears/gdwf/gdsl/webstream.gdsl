@@ -1,0 +1,27 @@
+package com.sysgears.gdwf.gdsl
+
+def setup = context(scope: annotatedScope(ctype: 'com.sysgears.gdwf.annotation.FlowSetup'))
+def state = context(scope: annotatedScope(ctype: 'com.sysgears.gdwf.annotation.FlowState'))
+
+contributor([setup, state]) {
+    method(name: 'activity', type: 'void', doc: 'Encloses activity task', params: [c: 'Closure'])
+
+    method(name: 'route', type: 'void', doc: 'Routes to the flow state', params: [args: [
+            parameter(name: 'controller', type: String.name),
+            parameter(name: 'action', type: String.name),
+            parameter(name: 'activity', type: Boolean.name)]])
+    method(name: 'route', type: 'void', doc: 'Routes to the flow state', params: [args: [
+            parameter(name: 'controller', type: String.name),
+            parameter(name: 'action', type: String.name),
+            parameter(name: 'activity', type: Boolean.name)],
+            callback: 'Closure'])
+
+    method(name: 'map', type: 'com.sysgears.gdwf.dispatch.EventMapper',
+            doc: 'Maps controller action to custom flow state', params: [args: [
+            parameter(name: 'controller', type: String.name),
+            parameter(name: 'action', type: String.name)]])
+
+    method(name: 'reset', type: 'void', doc: 'Resets current flow state', params: [:])
+
+    property(name: 'flowScope', type: 'com.sysgears.gdwf.scope.FlowScope')
+}

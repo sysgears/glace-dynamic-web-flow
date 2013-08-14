@@ -1,0 +1,12 @@
+# IDE support files
+/.classpath
+/.project
+/.settings
+/.idea
+/*.iml
+
+# logs
+/stacktrace.log
+
+# "temporary" build files
+/target
