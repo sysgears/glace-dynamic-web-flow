@@ -2,9 +2,9 @@ package com.sysgears.gdwf.mixins
 
 import com.sysgears.gdwf.GDWFConstraints
 import com.sysgears.gdwf.dispatch.EventDispatcher
+import com.sysgears.gdwf.exceptions.FlowValidationException
 import com.sysgears.gdwf.exceptions.IncorrectStateException
 import com.sysgears.gdwf.exceptions.NoSuchEntryException
-import com.sysgears.gdwf.exceptions.FlowValidationException
 import com.sysgears.gdwf.execution.ExecutionScope
 import com.sysgears.gdwf.execution.ExecutionScopeProxy
 import com.sysgears.gdwf.execution.IExecutor
@@ -12,8 +12,8 @@ import com.sysgears.gdwf.execution.item.ItemExecutorFactory
 import com.sysgears.gdwf.execution.recall.RecallExecutorFactory
 import com.sysgears.gdwf.execution.render.RenderExecutorFactory
 import com.sysgears.gdwf.execution.route.RouteExecutorFactory
-import com.sysgears.gdwf.persistence.HibernateSessionHolder
 import com.sysgears.gdwf.persistence.FlowExecutionListeners
+import com.sysgears.gdwf.persistence.HibernateSessionHolder
 import com.sysgears.gdwf.registry.FlowItem
 import com.sysgears.gdwf.registry.FlowRegistry
 import com.sysgears.gdwf.repository.Entry
@@ -44,13 +44,19 @@ class GDWFMixin {
      */
     void redirect(Map args) {
         if (flowRegistry.findByActionName(params.controller, params.action)) {
-            flowExecutionListeners.close()
-            flowScope.clear()
-            flowSessionHolder.clear()
-            entryRepository.clear()
+            if (!request.isRedirected()) {
+                flowExecutionListeners.close()
+                flowScope.clear()
+                flowSessionHolder.clear()
+                entryRepository.clear()
+                gdwfCachedRedirect(args)
+            } else {
+                throw new FlowValidationException("""Request can't be redirected more than once
+                    inside the flow state""")
+            }
+        } else {
+            gdwfCachedRedirect(args)
         }
-
-        gdwfCachedRedirect(args)
     }
 
     /**
@@ -77,7 +83,11 @@ class GDWFMixin {
      */
     void callGDWFState(Map args, Closure c) {
         EventDispatcher eventDispatcher = new EventDispatcher(c)
-        callGDWFState(args, eventDispatcher)
+        if (eventDispatcher.dispatcher && !eventDispatcher.dispatcher.isEmpty()) {
+            callGDWFState(args, eventDispatcher)
+        } else {
+            callGDWFState(args)
+        }
     }
 
     /**
@@ -101,13 +111,18 @@ class GDWFMixin {
         def flowItem = flowRegistry.findByActionName(params.controller, params.action)
 
         if (flowItem) {
-            Boolean activity = args.activity != null && args.activity instanceof Boolean ? args.activity : null
-            Map redirectParams = args.params && args.params instanceof Map ? args.params : [:]
+            if (!request.isRedirected()) {
+                Boolean activity = args.activity != null && args.activity instanceof Boolean ? args.activity : null
+                Map redirectParams = args.params && args.params instanceof Map ? args.params : [:]
 
-            IExecutor routeExecutor = routeExecutorFactory.create(this, activity, redirectParams,
-                    controllerToRedirect, actionToRedirect, eventDispatcher)
+                IExecutor routeExecutor = routeExecutorFactory.create(this, activity, redirectParams,
+                        controllerToRedirect, actionToRedirect, eventDispatcher)
 
-            routeExecutor.execute()
+                routeExecutor.execute()
+            } else {
+                throw new FlowValidationException("""Request can't be redirected more than once
+                                    inside the flow state""")
+            }
         } else {
             throw new FlowValidationException("callGDWFState method can only be called inside the flow action")
         }
@@ -121,9 +136,14 @@ class GDWFMixin {
     void recallGDWFState() throws FlowValidationException {
         def flowItem = flowRegistry.findByActionName(params.controller, params.action)
         if (flowItem) {
-            IExecutor recallExecutor = recallExecutorFactory.create(this)
+            if (!request.isRedirected()) {
+                IExecutor recallExecutor = recallExecutorFactory.create(this)
 
-            recallExecutor.execute()
+                recallExecutor.execute()
+            } else {
+                throw new FlowValidationException("""Request can't be redirected more than once
+                                    inside the flow state""")
+            }
         } else {
             throw new FlowValidationException("recallGDWFState method can only be called inside the events closure " +
                     "of flow action")
@@ -137,10 +157,9 @@ class GDWFMixin {
      * @throws FlowValidationException in case if current action is not registered in a flow registry
      */
     def executeGDWFSetupStage(Closure c) throws FlowValidationException {
+        // get flow name for the current action
+        FlowItem flowItem = flowItem
         try {
-            // get flow name for the current action
-            FlowItem flowItem = flowItem
-
             if (isFlowExecuted()) {
                 Integer setupActionId = tokenProxy.flowToken
                         .substring(GDWFConstraints.FLOW_TOKEN_PREFIX.length()) as Integer
@@ -155,7 +174,7 @@ class GDWFMixin {
             }
         } catch (IncorrectStateException e) {
             log.info(e.message)
-            response.sendError(404)
+            executeSetupActivity(flowItem, c)
         }
     }
 

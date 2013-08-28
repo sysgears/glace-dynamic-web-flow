@@ -15,6 +15,9 @@ class EventScopeItemExecutor extends AbstractItemExecutor implements IExecutor {
 
     @Override
     void execute() {
+        // add token value to the request attributes,
+        // so that the Grails' form and submitButton taglibs could imitate the WebFlow HTML pages
+        request[GDWFConstraints.GDWF_TOKEN_VARIABLE_NAME] = tokenProxy.compoundToken
         Events defaultEvents = setupFlowItem.events
         Events events = flowItem.events.merge(defaultEvents, [GDWFConstraints.ACTIVITY_METHOD_NAME])
         Closure stateEvent = events.get(eventTriggered, stateOwner)

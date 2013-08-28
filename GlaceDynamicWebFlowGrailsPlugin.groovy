@@ -62,7 +62,6 @@ class GlaceDynamicWebFlowGrailsPlugin {
 
     def author = 'SysGears, LLC'
     def authorEmail = 'info@sysgears.com'
-    // TODO: Set valid emails
     def developers = [[name: 'Dmitriy Pavlenko', email: 'dmitriy.pavlenko@sysgears.com'],
             [name: 'Andrey Shevchenko', email: 'andrey.shevchenko@sysgears.com']]
     def organization = [name: "SysGears LLC", url: "http://sysgears.com"]
