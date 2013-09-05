@@ -439,6 +439,10 @@ def createAccountFlow = {
 }
 ```
 
+###Code Samples
+
+Most common use cases can be found [here](https://github.com/sysgears/glace-dynamic-web-flow-showcase).
+
 ##IDE support
 
 IntelliJ IDEA provides code completion and syntax highlighting of plugin's DSL.
