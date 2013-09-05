@@ -57,8 +57,9 @@ class GlaceDynamicWebFlowGrailsPlugin {
     def grailsVersion = '2.0 > *'
 
     def title = 'Glace Web Flow Plugin'
-    // TODO: Add plugin description
-    //def description = """Glace Web Flow Plugin"""
+    def description = """Glace Dynamic Web Flow plugin is developed to make Grails implementation of a web flow
+flexible and dynamic. The plugin inherits Spring Web Flow paradigms and utilizes principle of decentralised
+configuration. This approach allows to override sequence of flow steps and affect transition rules at runtime."""
 
     def author = 'SysGears, LLC'
     def authorEmail = 'info@sysgears.com'
@@ -66,16 +67,10 @@ class GlaceDynamicWebFlowGrailsPlugin {
             [name: 'Andrey Shevchenko', email: 'andrey.shevchenko@sysgears.com']]
     def organization = [name: "SysGears LLC", url: "http://sysgears.com"]
 
-    // TODO: Add documentation to GitHub
-    //def documentation = 'https://github.com/sysgears/glace-web-flow-plugin/blob/master/README.md'
+    def documentation = 'https://github.com/sysgears/glace-dynamic-web-flow/blob/master/README.md'
     def license = 'APACHE'
-    //def issueManagement = [system: 'github', url: 'https://github.com/sysgears/glace-web-flow-plugin/issues']
-    //def scm = [url: "https://github.com/sysgears/glace-web-flow-plugin"]
-
-    // TODO: Add docs to specified path
-    // sample: https://github.com/grails-plugins/grails-cloud-foundry/tree/master/src/docs/guide
-    // GitHub pages http://pages.github.com/
-    //List pluginExcludes = ['src/docs/**']
+    def issueManagement = [system: 'github', url: 'https://github.com/sysgears/glace-dynamic-web-flow/issues']
+    def scm = [url: 'https://github.com/sysgears/glace-dynamic-web-flow']
 
     List watchedResources = ['file:./grails-app/controllers/**/*Controller.groovy',
             'file:./plugins/*/grails-app/controllers/**/*Controller.groovy']
