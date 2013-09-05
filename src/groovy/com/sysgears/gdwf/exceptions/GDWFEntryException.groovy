@@ -1,16 +1,16 @@
 package com.sysgears.gdwf.exceptions
 
 /**
- * Thrown in case if entry can't be found by specified tokens.
+ * Represents an error occurred during the validation of the user entry.
  */
-class NoSuchEntryException extends GDWFEntryException {
+class GDWFEntryException extends Exception {
 
     /**
      * Constructs new exception instance with the specified detail message.
      *
      * @param message the detail message
      */
-    NoSuchEntryException(String message) {
+    GDWFEntryException(String message) {
         super(message)
     }
 }

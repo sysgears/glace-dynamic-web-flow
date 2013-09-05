@@ -3,6 +3,7 @@ package com.sysgears.gdwf.mixins
 import com.sysgears.gdwf.GDWFConstraints
 import com.sysgears.gdwf.dispatch.EventDispatcher
 import com.sysgears.gdwf.exceptions.FlowValidationException
+import com.sysgears.gdwf.exceptions.GDWFEntryException
 import com.sysgears.gdwf.exceptions.IncorrectStateException
 import com.sysgears.gdwf.exceptions.NoSuchEntryException
 import com.sysgears.gdwf.execution.ExecutionScope
@@ -160,17 +161,19 @@ class GDWFMixin {
         // get flow name for the current action
         FlowItem flowItem = flowItem
         try {
-            if (isFlowExecuted()) {
-                Integer setupActionId = tokenProxy.flowToken
-                        .substring(GDWFConstraints.FLOW_TOKEN_PREFIX.length()) as Integer
-                if (setupActionId == flowItem.flowId) {
-                    executeState(flowItem, c, setupActionId, true)
+            handleFlowExecution {
+                if (isFlowExecuted()) {
+                    Integer setupActionId = tokenProxy.flowToken
+                            .substring(GDWFConstraints.FLOW_TOKEN_PREFIX.length()) as Integer
+                    if (setupActionId == flowItem.flowId) {
+                        executeState(flowItem, c, setupActionId, true)
+                    } else {
+                        clearFlow()
+                        executeSetupActivity(flowItem, c)
+                    }
                 } else {
-                    clearFlow()
                     executeSetupActivity(flowItem, c)
                 }
-            } else {
-                executeSetupActivity(flowItem, c)
             }
         } catch (IncorrectStateException e) {
             log.info(e.message)
@@ -187,9 +190,10 @@ class GDWFMixin {
     def executeGDWFStateStage(Closure c) throws FlowValidationException {
         try {
             FlowItem flowItem = flowItem
-
-            Integer setupActionId = tokenProxy.flowToken.substring(GDWFConstraints.FLOW_TOKEN_PREFIX.length()) as Integer
-            executeState(flowItem, c, setupActionId, false)
+            handleFlowExecution {
+                Integer setupActionId = tokenProxy.flowToken.substring(GDWFConstraints.FLOW_TOKEN_PREFIX.length()) as Integer
+                executeState(flowItem, c, setupActionId, false)
+            }
         } catch (IncorrectStateException e) {
             log.info(e)
             response.sendError(404)
@@ -308,6 +312,26 @@ class GDWFMixin {
         }
 
         result
+    }
+
+    /**
+     * Handles logic executed in flow.
+     * Detects error occurred during the flow logic execution and clears flow scopes if necessary.
+     *
+     * @param closureToHandle logic to execute
+     */
+    private void handleFlowExecution(Closure closureToHandle) {
+        try {
+            closureToHandle.call()
+        } catch (Throwable t) {
+            if (!(t instanceof GDWFEntryException)) {
+                flowScope.clear()
+                flowSessionHolder.clear()
+                entryRepository.clear()
+            }
+
+            throw t
+        }
     }
 
     private static def getParams() {

@@ -1,7 +1,7 @@
 package com.sysgears.gdwf.exceptions
 
 /**
- * Thrown if there was an invalid entry to the flow action or method.
+ * Represents an error that was caused by an invalid usage of the flow constructions.
  */
 class FlowValidationException extends Exception {
 
