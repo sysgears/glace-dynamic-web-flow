@@ -67,7 +67,7 @@ configuration. This approach allows to override sequence of flow steps and affec
             [name: 'Andrey Shevchenko', email: 'andrey.shevchenko@sysgears.com']]
     def organization = [name: "SysGears LLC", url: "http://sysgears.com"]
 
-    def documentation = 'https://github.com/sysgears/glace-dynamic-web-flow/blob/master/README.md'
+    def documentation = 'http://sysgears.com/work/glace-dynamic-web-flow/docs/latest/'
     def license = 'APACHE'
     def issueManagement = [system: 'github', url: 'https://github.com/sysgears/glace-dynamic-web-flow/issues']
     def scm = [url: 'https://github.com/sysgears/glace-dynamic-web-flow']
